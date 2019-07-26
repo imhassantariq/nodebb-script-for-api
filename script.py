@@ -11,14 +11,16 @@ NOBEE_API_URL = "http://localhost:4568/api/v2"
 def parse_arguments():
     """This Function checks for command line arguments and parse it"""
     arg = argparse.ArgumentParser()
-    arg.add_argument("-c", "--categories", required=True,
+    arg.add_argument("-c", "--categories",
                      help="Number of Categories you want to create", type=int)
-    arg.add_argument("-t", "--topics", required=True,
-                     help="Number of topics you want to create in each category", type=int)
-    arg.add_argument("-r", "--replies", required=True,
-                     help="Number of replies you want to post in each topic", type=int)
+    arg.add_argument("-t", "--topics",
+                     help="Number of topics you want to create in each category", type=int, default=0)
+    arg.add_argument("-r", "--replies",
+                     help="Number of replies you want to post in each topic", type=int, default=0)
+    arg.add_argument("-u", "--users",
+                     help="Number of users you want to create", type=int)
     arg_values = vars(arg.parse_args())
-    return arg_values["categories"], arg_values["topics"], arg_values["replies"]
+    return arg_values
 
 
 def create_categories(num_of_categories):
@@ -76,6 +78,21 @@ def post_replies(list_of_topic_ids, num_of_replies):
     return list_of_post_id
 
 
+def create_users(num_of_users):
+    list_of_users = []
+    for num in range(0, num_of_users):
+        user_name = uuid.uuid4()
+        data = {
+            'username': "test-user-" + str(user_name)
+        }
+        status, response, seconds_took = _call('/users', **data)
+        if status:
+                payload = response['payload']
+                print("User with id:{} created and took {} seconds.".format(payload['uid'], seconds_took))
+                list_of_users.append({payload['uid']: payload})
+    return list_of_users
+
+
 def _call(path, **kwargs):
     kwargs['_uid'] = 1
     headers = {
@@ -91,7 +108,11 @@ def _call(path, **kwargs):
 
 
 if __name__ == "__main__":
-    num_of_categories, num_of_topics, num_of_replies = parse_arguments()
-    list_of_categories = create_categories(num_of_categories)
-    list_of_topic_id = create_topics(list_of_categories, num_of_topics)
-    list_of_replies_id = post_replies(list_of_topic_id, num_of_replies)
+    arguments = parse_arguments()
+    if arguments['categories']:
+        list_of_categories = create_categories(arguments['categories'])
+        list_of_topic_id = create_topics(list_of_categories, arguments['topics'])
+        list_of_replies_id = post_replies(list_of_topic_id, arguments['replies'])
+
+    if arguments['users']:
+        list_of_users = create_users(arguments['users'])
