@@ -43,8 +43,8 @@ def create_topics(list_of_categories, num_of_topics):
     for category in list_of_categories:
         for num in range(0, num_of_topics):
             topic_uuid = str(uuid.uuid4())
-            topic_title = list_of_categories[category]['payload']['name'] + "-topic-" + topic_uuid
-            topic_content = list_of_categories[category]['payload']['name'] + "-description-" + topic_uuid
+            topic_title = '{}-topic-{}'.format(list_of_categories[category]['payload']['name'], topic_uuid)
+            topic_content = '{}-description-{}'.format(list_of_categories[category]['payload']['name'], topic_uuid)
             data = {
                 'cid': category,
                 'title': topic_title,
